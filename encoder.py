@@ -2,15 +2,19 @@ from util import Util as ut
 import komm as km
 import numpy as np
 
+# TODO add more encoders
+# TODO comment code
+# TODO improve readability
+
 
 class encoder:
     # Enum of the different types of codes
-    HAMMING = 0  # param = [n, k]
+    HAMMING = 0  # param = redundancy
     CYCLIC = 1  # param = n
     BLOCK = 2   # param = n
     # param = block_size (1 does nothing, 2 repeats each bit onece, and so on)
-    REPEAT = 3
-    SINGLE_PARITY = 4  # This is useless for error correction, only works for error detection
+    REPEAT = 3  # param = amount of times to repeat each bit
+    SINGLE_PARITY = 4  # Param = amount of data bits per codeword
     BCH = 5  # param = n
     REED_SOLOMON = 6  # param = n
     REED_SOLOMON_2 = 7  # param = n
@@ -18,10 +22,17 @@ class encoder:
     def __init__(self):
         pass
 
-    def encode(self, data, code, param=None):
-        # Data is a list of integers (a flattened image in the case of this project)
-        # Code is an integer representing the type of code to use
-        # Param is an integer or list of integers representing the parameters of the code (if any)
+    def encode(self, data: list, code: int, param=None) -> list:
+        """Encodes the data using the specified code
+
+        Args:
+            data (list): list of bits to encode
+            code (int): encoding to be used. See the enum for the different types
+            param (any, optional): Encoding parameters, if any. Defaults to None.
+
+        Returns:
+            list: list of lists, each inner list is a codeword
+        """
         if code is self.HAMMING:
             blocks = ut.partition(data, 2**(param)-param-1)
             res = []
@@ -33,9 +44,12 @@ class encoder:
         elif code is self.BLOCK:
             return self.block(data, param)
         elif code is self.REPEAT:
-            return self.repeat(data, param)
+            blocks = ut.partition(data, 1)
+            blocks = [self.repeat(block, param) for block in blocks]
+            return blocks
         elif code is self.SINGLE_PARITY:
-            return self.single_parity(data, param)
+            blocks = ut.partition(data, param)
+            return [self.single_parity(block) for block in blocks]
         elif code is self.BCH:
             return self.bch(data, param)
         elif code is self.REED_SOLOMON:
@@ -45,13 +59,22 @@ class encoder:
         else:
             return data
 
-    def hamming(self, data, redundancy):
+    def hamming(self, data: list, redundancy: int) -> list:
+        """Encodes the data using the hamming code.
+
+        Args:
+            data (list): list of bits to encode. Must be the length of one codeword worth of data.
+            redundancy (int): amount of redundancy bits per codeword. Must be less than the length of the data.
+
+        Returns:
+            list: codeword representing the data, with the redundancy bits
+        """
         blockLen = 2**redundancy - 1
         dataLen = blockLen-redundancy
         keys = [x for x in range(1, blockLen+1)]
         parityKeys = [2**x for x in range(redundancy)]
         dataKeys = [x for x in keys if x not in parityKeys]
-        codeWord = [2 for x in range(blockLen)]
+        codeWord = [2 for _ in range(blockLen)]
         for i in range(dataLen):
             codeWord[dataKeys[i]-1] = data[i]
         for i in parityKeys:
@@ -66,18 +89,29 @@ class encoder:
     def block(self, data, block_size):
         pass
 
-    def repeat(data, n):
-        blocks = ut.partition(data, 1)
-        for block in blocks:
-            for i in range(n):
-                block.append(block[0])
-        return ut.unPartition(blocks)
+    def repeat(self, bit, n):
+        """Encodes the data by repeating each bit n times
 
-    def single_parity(self, data, block_size):
-        blocks = ut.partition(data, block_size-1)
-        for block in blocks:
-            block.append(sum(block) % 2)
-        return ut.unPartition(blocks)
+        Args:
+            bit (list): list of bits to encode
+            n (int): number of times to repeat each bit
+
+        Returns:
+            list: list of bits, with each bit repeated n times
+        """
+        return bit*n
+
+    def single_parity(self, data):
+        """Encodes the data by appending a parity bit to the end of the data
+
+        Args:
+            data (list): list of bits to encode
+
+        Returns:
+            list: list of bits, with a parity bit appended to the end
+        """
+        data.append(sum(data) % 2)
+        return data
 
     def bch(self, data, n):
         pass

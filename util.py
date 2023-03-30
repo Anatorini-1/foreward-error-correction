@@ -1,24 +1,44 @@
 import imageio
 import numpy as np
+from typing import List
 
 
 class Util:
 
-    # Reads the @file_name image and returns it as a numpy array (width x height x 3)
     @staticmethod
-    def readImage(file_name):
+    def readImage(file_name: str) -> np.ndarray:
+        """Reads the file_name image and returns it as a numpy array (width x height x 3)
+
+        Args:
+            file_name (str): Name of the image file
+
+        Returns:
+            np.ndarray: numpy array of the image
+        """
         img = imageio.imread(file_name)
         return img
 
-    # Writes the @img numpy array to the @file_name image
     @staticmethod
-    def writeImage(file_name, img):
+    def writeImage(file_name: str, img: np.ndarray) -> None:
+        """Writes the img numpy array to the file_name image
+
+        Args:
+            file_name (str): Name of the image file
+            img (np.ndarray): numpy array of the image
+        """
         imageio.imwrite(file_name, img)
         return
 
-    # Flatterns the @img numpy array to a list of rgb values
     @staticmethod
-    def flattenImage(img):
+    def flattenImage(img: np.ndarray) -> list:
+        """Flattens the img numpy array to a list of rgb values
+
+        Args:
+            img (np.ndarray): numpy array of the image
+
+        Returns:
+            list: list of rgb values
+        """
         result = []
         for row in img:
             for pixel in row:
@@ -27,7 +47,7 @@ class Util:
         return result
 
     @staticmethod
-    def unFlattenImage(img, width, height):
+    def unFlattenImage(img: np.ndarray, width: int, height: int) -> List[list]:
         result = []
         for i in range(height):
             row = []
@@ -40,9 +60,21 @@ class Util:
         return result
 
     @staticmethod
-    def partition(data, n):
+    def partition(data, n) -> List[list]:
+        """Partitions the data into n blocks
+
+        Args:
+            data (list): data to partition
+            n (int): length of each block
+
+        Returns:
+            List[list]: list of blocks
+        """
         result = []
-        toApp = max(n-1, len(data) % n)
+        if(len(data) < n):
+            toApp = max(n-1, len(data) % n)
+        else:
+            toApp = len(data) % n
         for i in range(toApp):
             data.append(0)
 
@@ -53,19 +85,44 @@ class Util:
         return result
 
     @staticmethod
-    def unPartition(data):
+    def unPartition(data: List[list]) -> list:
+        """Unpartitions the data into a single list (flattens the list)
+
+        Args:
+            data (List[list]): list of blocks to unpartition
+
+        Returns:
+            list: flattened list
+        """
         return np.array(data).flatten().tolist()
 
     @staticmethod
-    def intToBin(n) -> int:
+    def intToBin(n: int) -> str:
+        """Converts an integer to its binary representation
+
+        Args:
+            n (int): integer to convert
+
+        Returns:
+            str: binary representation of n
+        """
         result = ""
         while n > 0:
             result = str(n % 2) + result
             n = n // 2
-        return int(result)
+        return result
 
     @staticmethod
     def swapEncoding(data: list, method="canonical") -> str:
+        """Swaps the Hamming encoding convention from [data_segment, parity_segment] to data and parity mixed,
+
+        Args:
+            data (list): codeword to convert
+            method (str, optional): The convenction to convert to. Either "canonical" or "data_parity". Defaults to "canonical".
+
+        Returns:
+            str: converted codeword
+        """
         newData = [0 for x in range(len(data))]
         keys = [x for x in range(1, len(data)+1)]
         redundancyBits = int(np.ceil(np.log2(len(data))))
@@ -90,3 +147,41 @@ class Util:
                 newData[i] = data[key-1]
                 i = i+1
         return newData
+
+    @staticmethod
+    def decToBinaryList(dec: list) -> list:
+        """Converts a list of rgb values to a list of binary values
+
+        Args:
+            dec (list): list of rgb values
+
+        Returns:
+            list: list of binary values
+        """
+        result = []
+        for value in dec:
+            binValue = Util.intToBin(value)
+            if(len(binValue) < 8):
+                binValue = "0" * (8-len(binValue)) + binValue
+            result.append([int(b) for b in binValue])
+        result = Util.unPartition(result)
+        return result
+
+    @staticmethod
+    def binaryListToDec(bin: list) -> list:
+        """Converts a list of 8-bit binary values to a list of decimal values
+
+        Args:
+            bin (list): list of binary values
+
+        Returns:
+            list: list of decimal values
+        """
+        result = []
+        bin = Util.partition(bin, 8)
+        for value in bin:
+            decValue = 0
+            for i in range(len(value)):
+                decValue += value[i] * 2**(7-i)
+            result.append(decValue)
+        return result

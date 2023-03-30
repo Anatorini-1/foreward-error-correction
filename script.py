@@ -8,9 +8,9 @@ encoder = en.encoder()
 decoder = de.decoder()
 channel = ch.channel()
 
-x = [0, 0, 1, 1]
-x = encoder.encode(x, encoder.HAMMING, 2)
-print(x)
-x = [ut.swapEncoding(x, "data_parity") for x in x]
-x = ut.unPartition(x)
-print(x)
+img = ut.readImage("img.bmp")
+flatImg = ut.flattenImage(img)
+binImage = ut.decToBinaryList(flatImg)
+decImage = ut.binaryListToDec(binImage)
+rgbImage = ut.unFlattenImage(decImage, 100, 100)
+ut.writeImage("img3.bmp", rgbImage)
