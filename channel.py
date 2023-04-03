@@ -6,4 +6,4 @@ class channel:
         pass
 
     def send(self, data):
-        pass
+        return data
