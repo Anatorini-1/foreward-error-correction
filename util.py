@@ -184,5 +184,5 @@ class Util:
             decValue = 0
             for i in range(len(value)):
                 decValue += value[i] * 2**(7-i)
-            result.append(decValue)
+            result.append(int(decValue))
         return result

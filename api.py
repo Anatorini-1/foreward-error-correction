@@ -5,7 +5,8 @@ from decoder import decoder
 from channel import channel
 from util import Util as ut
 import json
-
+import imageio
+import struct
 en = encoder()
 ch = channel()
 dc = decoder()
@@ -27,11 +28,12 @@ CORS(app)
 
 @app.route("/api/send", methods=["POST"])
 def send():
-    encoding = request.data["encoding"]
-    params = request.data["params"]
-    data = request.data["data"]
-    type = request.data["type"]
-
+    jsonData = json.loads(request.data)
+    print(jsonData)
+    encoding = jsonData['encoding']
+    params = jsonData["encodingParams"]
+    data = jsonData["data"]
+    type = jsonData["type"]
     if encoding not in enc.keys():
 
         return json.dumps({
@@ -47,15 +49,16 @@ def send():
             "code": "400"
         }), 400
 
-    paramsToPass = json.loads(params)
     if encoding == "HAMMING":  # TODO add more encodings
-        paramsToPass = int(paramsToPass)
-
+        paramsToPass = int(params[0])
     binaryData = serializeData(data, type)
+    binaryData = ut.unPartition(binaryData)
     encodedData = en.encode(binaryData, enc[encoding], paramsToPass)
+    encodedData = ut.unPartition(encodedData)
     noisyData = ch.send(encodedData)
     decodedData = dc.decode(noisyData, enc[encoding], paramsToPass)
-    formattedData = deserializeData(decodedData, type)
+    # using binaryData as a placeholder
+    formattedData = deserializeData(binaryData, type)
     return json.dumps({
         "data": formattedData,
         "bitsSent": len(encodedData),
@@ -76,16 +79,10 @@ def serializeData(data: any, dataType: str) -> list:
     Returns:
         list: list of bits representing the data
     """
-    if dataType == "plainText":
-        chars = [ord(char) for char in data]
-        bits = ut.decListToBinaryList(chars)
-        return ut.unPartition(bits)
-    elif dataType == "img":
-        return [0, 0, 0, 0, 0, 0, 0, 0]  # TODO
-    elif dataType == "textFile":
-        return [0, 0, 0, 0, 0, 0, 0, 0]  # TODO
-    else:
-        return data
+
+    chars = [ord(char) for char in data]
+    bits = ut.decListToBinaryList(chars)
+    return bits
 
 
 def deserializeData(data: list, dataType: str) -> any:
@@ -98,15 +95,7 @@ def deserializeData(data: list, dataType: str) -> any:
     Returns:
         any: reconstucted data
     """
-
-    if dataType == "plainText":
-        charCodes = ut.binaryListToDec(data)
-        chars = [chr(code) for code in charCodes]
-        text = "".join(chars)
-        return text
-    elif dataType == "img":
-        return [0, 0, 0, 0, 0, 0, 0, 0]  # TODO
-    elif dataType == "textFile":
-        return [0, 0, 0, 0, 0, 0, 0, 0]  # TODO
-
-    return data
+    charCodes = ut.binaryListToDec(data)
+    chars = [chr(code) for code in charCodes]
+    text = "".join(chars)
+    return text
