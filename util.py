@@ -110,6 +110,8 @@ class Util:
         while n > 0:
             result = str(n % 2) + result
             n = n // 2
+        if result == "":
+            result = "0"
         return result
 
     @staticmethod
@@ -149,8 +151,8 @@ class Util:
         return newData
 
     @staticmethod
-    def decToBinaryList(dec: list) -> list:
-        """Converts a list of rgb values to a list of binary values
+    def decListToBinaryList(dec: list) -> list:
+        """Converts a list of decimal[0-255] values to a list of binary values
 
         Args:
             dec (list): list of rgb values
@@ -164,7 +166,6 @@ class Util:
             if(len(binValue) < 8):
                 binValue = "0" * (8-len(binValue)) + binValue
             result.append([int(b) for b in binValue])
-        result = Util.unPartition(result)
         return result
 
     @staticmethod
@@ -183,5 +184,5 @@ class Util:
             decValue = 0
             for i in range(len(value)):
                 decValue += value[i] * 2**(7-i)
-            result.append(decValue)
+            result.append(int(decValue))
         return result

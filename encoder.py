@@ -6,6 +6,15 @@ import numpy as np
 # TODO comment code
 # TODO improve readability
 
+encodings = {
+    "HAMMING": 0,
+    "CYCLIC": 1,
+    "REPEAT": 3,
+    "BCH": 5,
+    "REED_SOLOMON": 6,
+    "REED_SOLOMON_2": 7
+}
+
 
 class encoder:
     # Enum of the different types of codes

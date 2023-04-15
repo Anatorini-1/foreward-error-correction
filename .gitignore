@@ -130,3 +130,14 @@ dmypy.json
 
 
 tak.txt
+node_modules/
+node_modules
+*.bmp
+*.gif
+*.ico
+*.jpeg
+*.jpg
+*.png
+*.psd
+.vscode/
+package-lock.json

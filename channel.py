@@ -8,7 +8,7 @@ class channel:
         self.error_ratio = 0
         self.errors = 0
         self.length = len(bits_list)
-
+        
     def random_errors(self, error_ratio):
 
         for i in range(0, int(self.length * error_ratio)):  # generating x mistakes in random places
@@ -83,3 +83,5 @@ class channel:
                 received_bits.append(bit)
 
         self.output_bits = received_bits
+    def send(self, data):
+        return data
