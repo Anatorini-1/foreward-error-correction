@@ -51,6 +51,8 @@ def send():
 
     if encoding == "HAMMING":  # TODO add more encodings
         paramsToPass = int(params[0])
+    elif encoding == "REPEAT":
+        paramsToPass = int(params[0])
     binaryData = serializeData(data, type)
     binaryData = ut.unPartition(binaryData)
     encodedData = en.encode(binaryData, enc[encoding], paramsToPass)
