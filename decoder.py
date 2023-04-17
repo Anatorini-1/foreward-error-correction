@@ -46,8 +46,9 @@ class decoder:
         else:
             return data
 
-    def hamming(self, data: list, redundancy: int) -> list:
-        pass
+    def hamming(self, codeData: list, redundancy: int) -> list:
+        code = km.HammingCode(redundancy)
+        return code.decode(codeData)
 
     def block(self, data, block_size):
         pass
