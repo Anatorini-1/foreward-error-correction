@@ -31,6 +31,12 @@ class decoder:
             return self.hamming(data, param)
         elif code is self.CYCLIC:
             return self.cyclic(data, param)
+        elif code is self.BLOCK:
+            return self.block(data, param)
+        elif code is self.REPEAT:
+            blocks = ut.partition(data, param)
+            blocks = [self.repeat(block, param) for block in blocks]
+            return blocks
         elif code is self.BCH:
             return self.bch(data, param)
         elif code is self.REED_SOLOMON:
@@ -43,8 +49,24 @@ class decoder:
     def hamming(self, data: list, redundancy: int) -> list:
         pass
 
+    def block(self, data, block_size):
+        pass
+
+    def repeat(self, block, n):
+        zero_count = 0
+        one_count = 0
+        for bit in block:
+            if bit == '0':
+                zero_count +=1
+            elif bit == '1':
+                one_count +=1
+        if zero_count < one_count:
+            return '1'
+        else:
+            return '0'
+
     def bch(self, data, param):
-        return km.BCHCode.decode(data)
+        pass
 
     def reed_solomon(self, data, n):
         pass
