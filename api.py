@@ -85,7 +85,7 @@ def send():
         "dataFormat": "bmp" if type == "img" else "txt",
         "bitsSent": len(encodedData),
         "code": "200",
-        "totalErrors": ch.errors,  # TODO to be supplied by channel
+        "totalErrors": ch.errors,
         "correctedErrors": 0,  # TODO to be supplied by decoder
         "BER": ch.error_ratio  # TODO to be supplied by channel and decoder combined
     }), 200
