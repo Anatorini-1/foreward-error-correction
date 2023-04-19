@@ -66,17 +66,14 @@ def send():
 
     # Parse the data, turn in into a list of bits
     binaryData = serializeData(data, type)
-    print("Data serialized")
     # Run the simulation
     encodedData = en.encode(binaryData, enc[encoding], paramsToPass)
-    encodedData = ut.unPartition(encodedData)
-    print("Data encoded")
     ch = channel(encodedData)
     addNoise(ch, channelType, channelParams)
     noisyData = ch.output_bits
-    print("Data sent through channel")
     decodedData = dc.decode(noisyData, enc[encoding], paramsToPass)
-    print("Data decoded")
+    finalErrors = calculateErrors(binaryData, decodedData)
+    correctedErrors = ch.errors - finalErrors
     # Encode the data into a json response
     formattedData = deserializeData(decodedData, type)
     return json.dumps({
@@ -85,9 +82,10 @@ def send():
         "dataFormat": "bmp" if type == "img" else "txt",
         "bitsSent": len(encodedData),
         "code": "200",
-        "totalErrors": ch.errors,  # TODO to be supplied by channel
-        "correctedErrors": 0,  # TODO to be supplied by decoder
-        "BER": ch.error_ratio  # TODO to be supplied by channel and decoder combined
+        "totalErrors": ch.errors,
+        "correctedErrors": correctedErrors,
+        "Channel_BER": ch.error_ratio,
+        "final_BER": finalErrors / len(binaryData)
     }), 200
 
 
@@ -194,3 +192,11 @@ def bitsToImg(bits: list) -> Image:
     print(len(rgbList))
     img.putdata(rgbList)
     return img
+
+
+def calculateErrors(input: list, output: list) -> int:
+    errors = 0
+    for i in range(len(input)):
+        if input[i] != output[i]:
+            errors = errors+1
+    return errors

@@ -11,6 +11,7 @@ encodings = {
     "REED_SOLOMON_2": 7
 }
 
+
 class decoder:
     # Enum of the different types of codes
     HAMMING = 0  # param = redundancy
@@ -48,7 +49,11 @@ class decoder:
 
     def hamming(self, codeData: list, redundancy: int) -> list:
         code = km.HammingCode(redundancy)
-        return code.decode(codeData)
+        wordLen = 2**(redundancy)-1
+        codeWords = ut.partition(codeData, wordLen)
+        codeWords = [ut.swapEncoding(c, "data_parity") for c in codeWords]
+        decodedData = [code.decode(cw) for cw in codeWords]
+        return ut.unPartition(decodedData)
 
     def block(self, data, block_size):
         pass
@@ -57,14 +62,14 @@ class decoder:
         zero_count = 0
         one_count = 0
         for bit in block:
-            if bit == '0':
-                zero_count +=1
-            elif bit == '1':
-                one_count +=1
+            if bit == 0:
+                zero_count += 1
+            elif bit == 1:
+                one_count += 1
         if zero_count < one_count:
-            return '1'
+            return 1
         else:
-            return '0'
+            return 0
 
     def bch(self, data, param):
         pass
