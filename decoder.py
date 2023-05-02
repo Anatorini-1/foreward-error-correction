@@ -53,7 +53,7 @@ class decoder:
         codeWords = ut.partition(codeData, wordLen)
         codeWords = [ut.swapEncoding(c, "data_parity") for c in codeWords]
         decodedData = [code.decode(cw) for cw in codeWords]
-        return ut.unPartition(decodedData)
+        return ut.flatten(decodedData)
 
     def block(self, data, block_size):
         pass

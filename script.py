@@ -5,14 +5,11 @@ from util import Util as ut
 import komm as km
 import numpy as np
 import os
-
+from PIL import Image
 encoder = en.encoder()
 decoder = de.decoder()
 
 
-data = [1, 1, 1, 1, 1, 1]
-print(data)
-codeWords = encoder.encode(data, encoder.REPEAT, 3)
-decodedData = decoder.decode(codeWords, decoder.REPEAT, 3)
-
-print(decodedData)
+bits = ut.readImageToBinary("./img/20x20.bmp")
+img = ut.creteImageFromBinary(bits, 20, 20)
+img.show()
