@@ -100,7 +100,7 @@ def serializeData(data: any, dataType: str) -> list:
         list: list of bits representing the data
     """
     if(dataType == "img"):
-        img = stringToImg(data)
+        img = b64toImage(data)
         global width, height
         width, height = img.size
         bits = imgToBits(img)
@@ -108,7 +108,7 @@ def serializeData(data: any, dataType: str) -> list:
     else:
         chars = [ord(char) for char in data]
         bits = ut.decListToBinaryList(chars)
-        bits = ut.unPartition(bits)
+        bits = ut.flatten(bits)
 
     return bits
 
@@ -124,8 +124,8 @@ def deserializeData(data: list, dataType: str) -> any:
         any: reconstucted data
     """
     if dataType == "img":
-        img = bitsToImg(data)
-        text = imgToString(img)
+        img = ut.creteImageFromBinary(data)
+        text = imgToBase64String(img)
 
     else:
         charCodes = ut.binaryListToDec(data)
@@ -160,13 +160,13 @@ def parseEncodingParams(params: list) -> list:
     return [int(param) for param in params]
 
 
-def stringToImg(data: str) -> Image:
+def b64toImage(data: str) -> Image:
     binary_data = io.BytesIO(data.encode("latin-1"))
     img = Image.open(binary_data)
     return img
 
 
-def imgToString(img: Image) -> str:
+def imgToBase64String(img: Image) -> str:
     buffered = BytesIO()
     img.save(buffered, format="BMP")
     imageBytes = buffered.getvalue()
@@ -179,19 +179,8 @@ def imgToBits(img: Image) -> list:
     rgbList = list(img.getdata())
     rgbList = [item for sublist in rgbList for item in sublist]
     bits = ut.decListToBinaryList(rgbList)
-    bits = ut.unPartition(bits)
+    bits = ut.flatten(bits)
     return bits
-
-
-def bitsToImg(bits: list) -> Image:
-    rgbList = ut.binaryListToDec(bits)
-    rgbList = ut.partition(rgbList, 3)
-    rgbList = [tuple(rgb) for rgb in rgbList]
-    img = Image.new("RGB", (width, height))
-    print(img.size[0] * img.size[1]*3)
-    print(len(rgbList))
-    img.putdata(rgbList)
-    return img
 
 
 def calculateErrors(input: list, output: list) -> int:

@@ -47,7 +47,7 @@ class encoder:
             res = []
             for block in blocks:
                 res.append(self.hamming(block, param))
-            return ut.unPartition(res)
+            return ut.flatten(res)
         elif code is self.CYCLIC:
             return self.cyclic(data, param)
         elif code is self.BLOCK:
@@ -55,7 +55,7 @@ class encoder:
         elif code is self.REPEAT:
             blocks = ut.partition(data, 1)
             blocks = [self.repeat(block, param) for block in blocks]
-            return ut.unPartition(blocks)
+            return ut.flatten(blocks)
         elif code is self.SINGLE_PARITY:
             blocks = ut.partition(data, param)
             return [self.single_parity(block) for block in blocks]

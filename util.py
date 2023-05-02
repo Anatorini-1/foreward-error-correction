@@ -1,63 +1,10 @@
 import imageio
 import numpy as np
 from typing import List
+from PIL import Image
 
 
 class Util:
-
-    @staticmethod
-    def readImage(file_name: str) -> np.ndarray:
-        """Reads the file_name image and returns it as a numpy array (width x height x 3)
-
-        Args:
-            file_name (str): Name of the image file
-
-        Returns:
-            np.ndarray: numpy array of the image
-        """
-        img = imageio.imread(file_name)
-        return img
-
-    @staticmethod
-    def writeImage(file_name: str, img: np.ndarray) -> None:
-        """Writes the img numpy array to the file_name image
-
-        Args:
-            file_name (str): Name of the image file
-            img (np.ndarray): numpy array of the image
-        """
-        imageio.imwrite(file_name, img)
-        return
-
-    @staticmethod
-    def flattenImage(img: np.ndarray) -> list:
-        """Flattens the img numpy array to a list of rgb values
-
-        Args:
-            img (np.ndarray): numpy array of the image
-
-        Returns:
-            list: list of rgb values
-        """
-        result = []
-        for row in img:
-            for pixel in row:
-                for channell in pixel:
-                    result.append(channell)
-        return result
-
-    @staticmethod
-    def unFlattenImage(img: np.ndarray, width: int, height: int) -> List[list]:
-        result = []
-        for i in range(height):
-            row = []
-            for j in range(width):
-                pixel = []
-                for k in range(3):
-                    pixel.append(img[i * width * 3 + j * 3 + k])
-                row.append(pixel)
-            result.append(row)
-        return result
 
     @staticmethod
     def partition(data, n) -> List[list]:
@@ -85,7 +32,7 @@ class Util:
         return result
 
     @staticmethod
-    def unPartition(data: List[list]) -> list:
+    def flatten(data: List[list]) -> list:
         """Unpartitions the data into a single list (flattens the list)
 
         Args:
@@ -186,3 +133,40 @@ class Util:
                 decValue += value[i] * 2**(7-i)
             result.append(int(decValue))
         return result
+
+    @staticmethod
+    def readImageToBinary(fileName: str) -> list:
+        """Reads the fileName image and returns it as a 1-D array of bits, 
+        representing the size of imgWidth*imgHeight*3(RGB) * 8 (bits per RGB value)
+
+        Args:
+            fileName (str): path to the image
+
+        Returns:
+        list: list of bits representing the image
+        """
+        img = Image.open(fileName, 'r', formats=None)
+        pixelArray = list(img.getdata())
+        pixelArray = Util.flatten(pixelArray)
+        binaryArray = Util.decListToBinaryList(pixelArray)
+        binaryArray = Util.flatten(binaryArray)
+        return binaryArray
+
+    @staticmethod
+    def creteImageFromBinary(bits: list, width: int, height: int) -> Image:
+        """Turn a binary representation of and image and transforms it to a PIL(library) Image
+
+        Args:
+            bits (list): BInary representation of an image (1-D array of 1s and 0s)
+            width (int): width of an image
+            height (int): height of an image
+
+        Returns:
+            Image: Image object created from the binary representation
+        """
+        rgb = Util.binaryListToDec(bits)
+        pixels = Util.partition(rgb, 3)
+        pixels = [tuple(p) for p in pixels]
+        img = Image.new("RGB", (width, height))
+        img.putdata(pixels)
+        return img
