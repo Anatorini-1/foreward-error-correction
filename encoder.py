@@ -39,6 +39,7 @@ class encoder:
             code (int): encoding to be used. See the enum for the different types
             param (any, optional): Encoding parameters, if any. Defaults to None.
 
+
         Returns:
             list: list of lists, each inner list is a codeword
         """
@@ -123,7 +124,17 @@ class encoder:
         return data
 
     def bch(self, data, n):
-        pass
+        """Encodes the given sequence of bits(data) with the BCH code
+
+        Args:
+            data (list): List of bits to encode
+            n (tuple(int,int)): Params of the code, (μ,τ). The resulting code will have 
+            a codeword length = 2^(μ - 1) and will be able to correct (at least) τ errors / codeword
+        """
+        code = km.BCHCode(n[0], n[1])
+        encodedData = [code.encode(word)
+                       for word in ut.partition(data, code.dimension)]
+        return ut.flatten(encodedData)
 
     def reed_solomon(self, data, n):
         pass

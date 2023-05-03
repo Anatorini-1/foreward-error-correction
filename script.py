@@ -11,5 +11,7 @@ decoder = de.decoder()
 
 
 bits = ut.readImageToBinary("./img/20x20.bmp")
-img = ut.creteImageFromBinary(bits, 20, 20)
+encoded = encoder.bch(bits, (7, 20))
+decoded = decoder.decode(encoded, decoder.BCH, (7, 20))
+img = ut.creteImageFromBinary(decoded, 20, 20)
 img.show()

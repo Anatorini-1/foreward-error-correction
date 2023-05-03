@@ -71,8 +71,17 @@ class decoder:
         else:
             return 0
 
-    def bch(self, data, param):
-        pass
+    def bch(self, data, params: tuple):
+        """Decodes the given sequence of bits(data)
+
+        Args:
+            data (list): List of bits to decode
+            params (tuple(int,int)): Params used to encode the data (μ,τ).
+        """
+        code = km.BCHCode(params[0], params[1])
+        decodedData = [code.decode(word)
+                       for word in ut.partition(data, code.length)]
+        return ut.flatten(decodedData)
 
     def reed_solomon(self, data, n):
         pass
