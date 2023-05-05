@@ -15,7 +15,12 @@ reedSolomonEncodingParams = [2, 3, 4, 5, 6]  # TODO: sprawdzic jakie parametry p
 # nie bedzie dzialac dla hamminga bo dane input są dłuższe niż dane output przez dodanie zer
 def calculateErrors(input: list, output: list) -> int:
     errors = 0
-    for i in range(len(input)):
+    print('\nChecking number of errors in received message: ')
+    print('len input', len(input))
+    print('len output', len(output))
+    print('\n\n\n')
+    for i in range((len(input)-10)):
+
         if input[i] != output[i]:
             errors = errors + 1
     return errors
@@ -23,9 +28,9 @@ def calculateErrors(input: list, output: list) -> int:
 
 # TODO: switch case dla różnych modeli
 # models parameters:
-# 1 = random errors
-# 2 = group noises
-# 3 = gilbert_eliot_model
+# 0 = random errors
+# 1 = group noises
+# 2 = gilbert_eliot_model
 
 def test_repeat(model, encodingParams):
     data = ut.readImageToBinary(R"C:\Users\stani\Desktop\proba.png")
@@ -106,10 +111,9 @@ def test_hamming(channelModel, encodingParams):
 
         print('encoding reverted', (len(encodedData) / (2 ** val - 1)) * (2 ** val - 1 - val))
         print('decoded', len(decodedData))
-        print('\n')
-        # y.append(float(calculateErrors(data, decodedData) / len(data)))
-    # plt.plot(x, y)
-    # plt.show()
+        y.append(float(calculateErrors(data, decodedData) / len(data)))
+    plt.plot(x, y)
+    plt.show()
 
 def test_bch(channelModel, encodingParams):
     data = ut.readImageToBinary(R"C:\Users\stani\Desktop\proba.png")
@@ -171,5 +175,5 @@ def test_reed_solomon(channelModel, encodingParams):
 
 
 # test_repeat(1, repeatEncodingParams)
-test_block(1, blockEncodingParams)
-# test_hamming(1, hammingEncodingParams)
+# test_block(1, blockEncodingParams)
+test_hamming(1, hammingEncodingParams)
