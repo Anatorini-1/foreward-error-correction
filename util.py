@@ -5,10 +5,10 @@ from PIL import Image
 
 
 class Util:
+    paddingLen: int = 0
 
-    @staticmethod
-    def partition(data, n) -> List[list]:
-        """Partitions the data into n blocks
+    def partition(self, data: list, n: int, respectPadding: bool = True) -> List[list]:
+        """Partitions the data into n-long blocks
 
         Args:
             data (list): data to partition
@@ -17,22 +17,21 @@ class Util:
         Returns:
             List[list]: list of blocks
         """
-        result = []
-        if(len(data) < n):
-            toApp = max(n-1, len(data) % n)
-        else:
-            toApp = len(data) % n
-        for i in range(toApp):
-            data.append(0)
 
-        blockCount = int(len(data)/n)
-        blockLen = int(len(data)/blockCount)
-        for i in range(0, blockCount):
-            result.append(data[blockLen * i: blockLen * (i+1)])
-        return result
+        if len(data) % n != 0:
+            toAdd = (n - (len(data) % n))
+            data = data + [0]*toAdd
+            if respectPadding:
+                self.paddingLen = toAdd
 
-    @staticmethod
-    def flatten(data: List[list]) -> list:
+        blocks = []
+        for i in range(0, int(len(data)/n)):
+            s = i*n
+            end = s+n
+            blocks.append(data[s:end])
+        return blocks
+
+    def flatten(self, data: List[list], respectPadding: bool = True) -> list:
         """Unpartitions the data into a single list (flattens the list)
 
         Args:
@@ -41,10 +40,14 @@ class Util:
         Returns:
             list: flattened list
         """
-        return np.array(data).flatten().tolist()
 
-    @staticmethod
-    def intToBin(n: int) -> str:
+        toReturn = np.array(data).flatten().tolist()
+        if respectPadding:
+            toReturn = toReturn[0:len(toReturn) - self.paddingLen]
+            self.paddingLen = 0
+        return toReturn
+
+    def intToBin(self, n: int) -> str:
         """Converts an integer to its binary representation
 
         Args:
@@ -61,8 +64,7 @@ class Util:
             result = "0"
         return result
 
-    @staticmethod
-    def swapEncoding(data: list, method="canonical") -> str:
+    def swapEncoding(self, data: list, method="canonical") -> str:
         """Swaps the Hamming encoding convention from [data_segment, parity_segment] to data and parity mixed,
 
         Args:
@@ -97,8 +99,7 @@ class Util:
                 i = i+1
         return newData
 
-    @staticmethod
-    def decListToBinaryList(dec: list) -> list:
+    def decListToBinaryList(self, dec: list) -> list:
         """Converts a list of decimal[0-255] values to a list of binary values
 
         Args:
@@ -109,14 +110,13 @@ class Util:
         """
         result = []
         for value in dec:
-            binValue = Util.intToBin(value)
+            binValue = self.intToBin(value)
             if(len(binValue) < 8):
                 binValue = "0" * (8-len(binValue)) + binValue
             result.append([int(b) for b in binValue])
         return result
 
-    @staticmethod
-    def binaryListToDec(bin: list) -> list:
+    def binaryListToDec(self, bin: list) -> list:
         """Converts a list of 8-bit binary values to a list of decimal values
 
         Args:
@@ -126,7 +126,7 @@ class Util:
             list: list of decimal values
         """
         result = []
-        bin = Util.partition(bin, 8)
+        bin = self.partition(bin, 8)
         for value in bin:
             decValue = 0
             for i in range(len(value)):
@@ -134,8 +134,7 @@ class Util:
             result.append(int(decValue))
         return result
 
-    @staticmethod
-    def readImageToBinary(fileName: str) -> list:
+    def readImageToBinary(self, fileName: str) -> list:
         """Reads the fileName image and returns it as a 1-D array of bits, 
         representing the size of imgWidth*imgHeight*3(RGB) * 8 (bits per RGB value)
 
@@ -147,13 +146,12 @@ class Util:
         """
         img = Image.open(fileName, 'r', formats=None)
         pixelArray = list(img.getdata())
-        pixelArray = Util.flatten(pixelArray)
-        binaryArray = Util.decListToBinaryList(pixelArray)
-        binaryArray = Util.flatten(binaryArray)
+        pixelArray = self.flatten(pixelArray)
+        binaryArray = self.decListToBinaryList(pixelArray)
+        binaryArray = self.flatten(binaryArray)
         return binaryArray
 
-    @staticmethod
-    def creteImageFromBinary(bits: list, width: int, height: int) -> Image:
+    def creteImageFromBinary(self, bits: list, width: int, height: int) -> Image:
         """Turn a binary representation of and image and transforms it to a PIL(library) Image
 
         Args:
@@ -164,8 +162,8 @@ class Util:
         Returns:
             Image: Image object created from the binary representation
         """
-        rgb = Util.binaryListToDec(bits)
-        pixels = Util.partition(rgb, 3)
+        rgb = self.binaryListToDec(bits)
+        pixels = self.partition(rgb, 3)
         pixels = [tuple(p) for p in pixels]
         img = Image.new("RGB", (width, height))
         img.putdata(pixels)
