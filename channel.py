@@ -13,7 +13,6 @@ class channel:
 
         for i in range(0, int(self.length * error_ratio)):  # generating x mistakes in random places
             rand_location = random.randint(0, self.length - 1)
-            # print(rand_location, "\n")
             self.output_bits[rand_location] = (self.output_bits[rand_location] + 1) % 2  # zamiana na przeciwny bit
 
         self.errors = int(self.length * error_ratio)

@@ -21,7 +21,7 @@ class encoder:
     HAMMING = 0  # param = redundancy
     REPEAT = 3  # param = amount of times to repeat each bit
     BCH = 5  # param = n
-    REED_SOLOMON = 6  # param = n
+    REED_MULLER = 6  # param = n
     REED_SOLOMON_2 = 7  # param = n
     ut = Util()
 
@@ -46,8 +46,8 @@ class encoder:
             return self.repeat(data, param)
         elif code is self.BCH:
             return self.bch(data, param)
-        elif code is self.REED_SOLOMON:
-            return self.reed_solomon(data, param)
+        elif code is self.REED_MULLER:
+            return self.reed_muller(data, param)
         else:
             return data
 

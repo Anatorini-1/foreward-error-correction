@@ -168,3 +168,4 @@ class Util:
         img = Image.new("RGB", (width, height))
         img.putdata(pixels)
         return img
+
