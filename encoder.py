@@ -1,4 +1,4 @@
-from util import Util as ut
+from util import Util
 import komm as km
 import numpy as np
 
@@ -19,14 +19,11 @@ encodings = {
 class encoder:
     # Enum of the different types of codes
     HAMMING = 0  # param = redundancy
-    CYCLIC = 1  # param = n
-    BLOCK = 2   # param = n
-    # param = block_size (1 does nothing, 2 repeats each bit onece, and so on)
     REPEAT = 3  # param = amount of times to repeat each bit
-    SINGLE_PARITY = 4  # Param = amount of data bits per codeword
     BCH = 5  # param = n
     REED_SOLOMON = 6  # param = n
     REED_SOLOMON_2 = 7  # param = n
+    ut = Util()
 
     def __init__(self):
         pass
@@ -39,36 +36,72 @@ class encoder:
             code (int): encoding to be used. See the enum for the different types
             param (any, optional): Encoding parameters, if any. Defaults to None.
 
+
         Returns:
             list: list of lists, each inner list is a codeword
         """
         if code is self.HAMMING:
-            blocks = ut.partition(data, 2**(param)-param-1)
-            res = []
-            for block in blocks:
-                res.append(self.hamming(block, param))
-            return ut.flatten(res)
-        elif code is self.CYCLIC:
-            return self.cyclic(data, param)
-        elif code is self.BLOCK:
-            return self.block(data, param)
+            return self.hamming(data, param)
         elif code is self.REPEAT:
-            blocks = ut.partition(data, 1)
-            blocks = [self.repeat(block, param) for block in blocks]
-            return ut.flatten(blocks)
-        elif code is self.SINGLE_PARITY:
-            blocks = ut.partition(data, param)
-            return [self.single_parity(block) for block in blocks]
+            return self.repeat(data, param)
         elif code is self.BCH:
             return self.bch(data, param)
         elif code is self.REED_SOLOMON:
             return self.reed_solomon(data, param)
-        elif code is self.REED_SOLOMON_2:
-            return self.reed_solomon_2(data, param)
         else:
             return data
 
     def hamming(self, data: list, redundancy: int) -> list:
+        blocks = self.ut.partition(data, 2**(redundancy)-redundancy-1)
+        res = []
+        for block in blocks:
+            res.append(self.__hamming_word(block, redundancy))
+        return self.ut.flatten(res)
+
+    def repeat(self, data, n):
+        """Encodes the data by repeating each bit n times
+
+        Args:
+            bit (list): list of bits to encode
+            n (int): number of times to repeat each bit
+
+        Returns:
+            list: list of bits, with each bit repeated n times
+        """
+        blocks = self.ut.partition(data, 1)
+        blocks = [block*n for block in blocks]
+        return self.ut.flatten(blocks)
+
+    def bch(self, data, n):
+        """Encodes the given sequence of bits(data) with the BCH code
+
+        Args:
+            data (list): List of bits to encode
+            n (tuple(int,int)): Params of the code, (μ,τ). The resulting code will have 
+            a codeword length = 2^(μ - 1) and will be able to correct (at least) τ errors / codeword
+        """
+        code = km.BCHCode(n[0], n[1])
+        encodedData = [code.encode(word)
+                       for word in self.ut.partition(data, code.dimension)]
+        return self.ut.flatten(encodedData)
+
+    def reed_muller(self, data, n):
+        """Encodes a given sequence of data using tj Reed-Muller
+        error correction code.
+
+        Args:
+            data (list): list of bits [0,1] to encode
+            n (tuple(int,int))): parameters of the code, [rho,mu] ,where 0 <= rho < mu
+        """
+        mu = n[0]
+        rho = n[1]
+        code = km.ReedMullerCode(mu, rho)
+        l = code.dimension
+        blocks = self.ut.partition(data, l, True)
+        encoded = [code.encode(block) for block in blocks]
+        return self.ut.flatten(encoded, True)
+
+    def __hamming_word(self, data, redundancy):
         """Encodes the data using the hamming code.
 
         Args:
@@ -94,42 +127,3 @@ class encoder:
             codeWord[i-1] = sum % 2
 
         return codeWord
-
-    def block(self, data, block_size):
-        pass
-
-    def repeat(self, bit, n):
-        """Encodes the data by repeating each bit n times
-
-        Args:
-            bit (list): list of bits to encode
-            n (int): number of times to repeat each bit
-
-        Returns:
-            list: list of bits, with each bit repeated n times
-        """
-        return bit*n
-
-    def single_parity(self, data):
-        """Encodes the data by appending a parity bit to the end of the data
-
-        Args:
-            data (list): list of bits to encode
-
-        Returns:
-            list: list of bits, with a parity bit appended to the end
-        """
-        data.append(sum(data) % 2)
-        return data
-
-    def bch(self, data, n):
-        pass
-
-    def reed_solomon(self, data, n):
-        pass
-
-    def reed_solomon_2(self, data, n):
-        pass
-
-    def cyclic(self, data, n):
-        pass
