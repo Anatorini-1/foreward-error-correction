@@ -22,7 +22,6 @@ class encoder:
     REPEAT = 3  # param = amount of times to repeat each bit
     BCH = 5  # param = n
     REED_MULLER = 6  # param = n
-    REED_SOLOMON_2 = 7  # param = n
     ut = Util()
 
     def __init__(self):
