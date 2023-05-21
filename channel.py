@@ -56,7 +56,8 @@ class channel:
 
     def gilbert_elliot_model(self, p1, p2, pg, pb):
         state = 1  # initialize to good state
-        received_bits = []
+        new_bits = []
+        temp_errors = 0
         for bit in self.output_bits:
             # determine the probability of staying in the current state or transitioning to the other state
             if state == 1:  # good state
@@ -69,19 +70,23 @@ class channel:
             # update the state based on a Markov chain with memory
             if random.random() < p and bit == 0:  # stay in good state and no error
                 state = 1
-                received_bits.append(bit)
+                new_bits.append(bit)
             elif random.random() < q and bit == 0:  # transition to bad/transition state and no error
                 state = 0
-                received_bits.append(bit)
+                new_bits.append(bit)
             elif random.random() < pg and bit == 1:  # stay in bad/transition state and good bit error
                 state = 0
-                received_bits.append(0)
+                new_bits.append(0)
+                temp_errors += 1
             elif random.random() < pb and bit == 1:  # transition to good state and bad/transition bit error
                 state = 1
-                received_bits.append(0)
+                new_bits.append(0)
+                temp_errors += 1
             else:  # stay in current state and no error
-                received_bits.append(bit)
+                new_bits.append(bit)
 
-        self.output_bits = received_bits
+        self.output_bits = new_bits
+        self.errors = temp_errors
+        self.error_ratio = temp_errors / self.length
     def send(self, data):
         return data
