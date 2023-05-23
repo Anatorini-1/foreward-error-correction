@@ -2,6 +2,9 @@ import imageio
 import numpy as np
 from typing import List
 from PIL import Image
+from multiprocessing import Pool
+from concurrent.futures import ThreadPoolExecutor
+import os
 
 
 class Util:
@@ -169,3 +172,35 @@ class Util:
         img.putdata(pixels)
         return img
 
+    def processPartOfList(data: list, fnc):
+        return [fnc(e) for e in data]
+
+    def pararellDecode(self, data, code):
+        """cpuCount = os.cpu_count()
+        p = Pool(cpuCount)
+        chunkSize = len(data) // cpuCount
+        chunks = []
+        for i in range(0, cpuCount):
+            chunks.append(data[i*chunkSize:i*chunkSize+chunkSize])
+        if cpuCount*chunkSize < len(data):
+            chunks.append(data[cpuCount*chunkSize + 1:])
+        res = p.map(Util.processPartOfList, chunks, code.decode)
+        res = self.flatten(res)
+        return res"""
+        p = Pool(None)
+        res = p.map(code.decode, data)
+        return res
+
+    def pararellEncode(self, data, code):
+        p = Pool(None)
+        res = p.map(code.encode, data)
+        return res
+
+    def calculateErrorRate(self, original: list, noisy: list) -> float:
+        if len(original) != len(noisy):
+            return 0
+        errors: int = 0
+        for i in range(0, len(original)):
+            if original[i] != noisy[i]:
+                errors = errors + 1
+        return errors / len(original)
