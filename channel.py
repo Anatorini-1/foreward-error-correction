@@ -8,7 +8,7 @@ class channel:
         self.error_ratio = 0
         self.errors = 0
         self.length = len(bits_list)
-        
+
     def random_errors(self, error_ratio):
 
         for i in range(0, int(self.length * error_ratio)):  # generating x mistakes in random places
@@ -46,54 +46,39 @@ class channel:
             i = i + j + space_between_groups - 1  # skipping next x bits
             j = 0
             self.errors = temp_errors
-            self.error_ratio = temp_errors / self.length  # TODO: zaokraglanie do ?
+            self.error_ratio = temp_errors / self.length
 
-    # p1 - probability of the channel being in the good state
-    # p2 - probability of error in the bad or transition state
-    # pg - probability of error in the good state
-    # pb - probability of error in the bad or transition state
+            # p = GOOD->BAD
 
-    def gilbert_elliot_model(self, p1, p2, pg, pb):
-        state = 1  # initialize to good state
-        received_bits = []
+    # q = BAD->GOOD
+
+    def gilbert_elliot_model(self, p, q):
+        new_bits = []
         temp_errors = 0
+        state = 'G'  # Initial state: good channel
+
         for bit in self.output_bits:
-            # determine the probability of staying in the current state or transitioning to the other state
-            if state == 1:  # good state
-                p = p1
-                q = 1 - p1
-            else:  # bad/transition state
-                p = p2
-                q = 1 - p2
+            if state == 'G':  # Good channel state
+                if random.random() > q:
+                    new_bits.append(1 - bit)  # Flip the bit
+                    state = 'B'  # Transition to bad channel state
+                    temp_errors += 1
 
-            # update the state based on a Markov chain with memory
-            if random.random() < p and bit == 0:  # stay in good state and no error
-                state = 1
-                received_bits.append(bit)
-            elif random.random() < q and bit == 0:  # transition to bad/transition state and no error
-                state = 0
-                received_bits.append(bit)
-            elif random.random() < pg and bit == 1:  # stay in bad/transition state and good bit error
-                state = 0
-                received_bits.append(0)
-                temp_errors += 1
-            elif random.random() < pb and bit == 1:  # transition to good state and bad/transition bit error
-                state = 1
-                received_bits.append(0)
-                temp_errors += 1
-            elif random.random() < pg and bit == 0:  # stay in bad/transition state and good bit error
-                state = 0
-                received_bits.append(1)
-                temp_errors += 1
-            elif random.random() < pb and bit == 0:  # transition to good state and bad/transition bit error
-                state = 1
-                received_bits.append(1)
-                temp_errors += 1
-            else:  # stay in current state and no error
-                received_bits.append(bit)
+                else:
+                    new_bits.append(bit)
 
-        self.output_bits = received_bits
+            elif state == 'B':  # Bad channel state
+                if random.random() < p:
+                    new_bits.append(1 - bit)  # Flip the bit
+                    state = 'G'  # Transition to good channel state
+                    temp_errors += 1
+
+                else:
+                    new_bits.append(bit)
+
+        self.output_bits = new_bits
         self.errors = temp_errors
         self.error_ratio = temp_errors / self.length
+
     def send(self, data):
         return data
