@@ -181,7 +181,7 @@ def test_reed_muller(channelModel, encodingParams):
             temp.append(float(calculateErrors(data, decodedData) / len(data)))  # adding result of current test to temp
 
         x.append(len(encodedData) / len(data))  # appending current redundancy
-        y.append(float(sum(temp) / len(temp)))  # appending avg value of 10 tests
+        y.append(float(sum(temp) / len(temp)))  # appending avg value of 3 tests
         plt.text((len(encodedData) / len(data)) + 0.2, (float(sum(temp) / len(temp))), val)
     plt.title(title)
     plt.xlabel('redundancy')
